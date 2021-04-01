@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -6,28 +6,6 @@ import Search from './Search';
 
 const Ingredients = () => {
   const [userIngredients, setUserIngredients] = useState([]);
-
-  /* Empty array as second argument makes useEffect act the same as componentDidMount, only runs 
-  'once' after the 'first' render. */
-  useEffect(() => {
-    fetch('https://rcg-react-hooks-ed0e9-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json').then(
-      response => response.json()
-    ).then(
-      responseData => {
-        const loadedIngredients = [];
-
-        for (const key in responseData) {
-          loadedIngredients.push({
-            id: key,
-            title: responseData[key].title,
-            amount: responseData[key].amount
-          });
-        }
-
-        setUserIngredients(loadedIngredients);
-      }
-    );
-  }, []);
 
   const addIngredientHandler = (ingredient) => {
     fetch('https://rcg-react-hooks-ed0e9-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json', {
@@ -54,12 +32,16 @@ const Ingredients = () => {
     }));
   }
 
+  const filteredIngredientsHandler = useCallback(filteredIngredients => {
+    setUserIngredients(filteredIngredients);
+  }, []);
+
   return (
     <div className="App">
       <IngredientForm onAddIngredient={addIngredientHandler}/>
 
       <section>
-        <Search />
+        <Search onLoadIngredients={filteredIngredientsHandler} />
         
         <IngredientList ingredients={userIngredients} onRemoveItem={removeIngredientHandler}></IngredientList>
       </section>
