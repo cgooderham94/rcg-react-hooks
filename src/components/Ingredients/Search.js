@@ -9,7 +9,7 @@ const Search = React.memo(props => {
   const inputRef = useRef();
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       if (enteredFilter === inputRef.current.value) {
         const queryParams = enteredFilter.length === 0 ? '' : `?orderBy="title"&equalTo="${enteredFilter}"`;
   
@@ -31,7 +31,11 @@ const Search = React.memo(props => {
           }
         );
       }
-    }, 500)
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [enteredFilter, onLoadIngredients, inputRef]);
 
   return (
