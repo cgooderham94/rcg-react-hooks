@@ -4,9 +4,10 @@
   margin: auto;
 }
 
-.ingredient-list h2 {
+.ingredient-list__heading-wrapper {
+  display: flex;
+  justify-content: space-between;
   border-bottom: 3px solid #ccc;
-  padding-bottom: 1rem;
 }
 
 .ingredient-list ul {
