@@ -27,9 +27,13 @@ const Ingredients = () => {
   }
 
   const removeIngredientHandler = (ingredientId) => {
-    setUserIngredients((prevIngredients) => prevIngredients.filter((ingredient) => {
-      return ingredientId !== ingredient.id;
-    }));
+    fetch(`https://rcg-react-hooks-ed0e9-default-rtdb.europe-west1.firebasedatabase.app/ingredients/${ingredientId}.json`, {
+      method: 'DELETE'
+    }).then(response => {
+      setUserIngredients((prevIngredients) => prevIngredients.filter((ingredient) => {
+        return ingredientId !== ingredient.id;
+      }));
+    });
   }
 
   const filteredIngredientsHandler = useCallback(filteredIngredients => {
