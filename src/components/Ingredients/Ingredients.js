@@ -1,12 +1,25 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useState, useEffect, useCallback } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
 import ErrorModal from '../UI/ErrorModal';
 import Search from './Search';
 
+const ingredientReducer = (currentIngredients, action) => {
+  switch (action.type) {
+    case 'SET_INGREDIENTS':
+      return action.ingredients;
+    case 'ADD_INGREDIENT':
+      return [...currentIngredients, action.ingredient];
+    case 'REMOVE_INGREDIENT':
+      return currentIngredients.filter(ing => ing.id !== action.id);
+    default:
+        throw new Error('We\'ll never reach this case!');
+  }
+}
+
 const Ingredients = () => {
-  const [userIngredients, setUserIngredients] = useState([]);
+  const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
 
@@ -23,12 +36,16 @@ const Ingredients = () => {
       setIsLoading(false);
       return response.json();
     }).then(responseData => {
-      setUserIngredients((prevIngredients) => [
-        ...prevIngredients, {
+      dispatch({
+        type: 'ADD_INGREDIENT',
+        ingredient: {
           id: responseData.name,
           ...ingredient
         }
-      ]);
+      })
+    }).catch(error => {
+      setError(error.message);
+      setIsLoading(false);
     });
   }
 
@@ -39,9 +56,10 @@ const Ingredients = () => {
       method: 'DELETE'
     }).then(response => {
       setIsLoading(false);
-      setUserIngredients((prevIngredients) => prevIngredients.filter((ingredient) => {
-        return ingredientId !== ingredient.id;
-      }));
+      dispatch({
+        type: 'REMOVE_INGREDIENT',
+        id: ingredientId
+      });
     }).catch(error => {
       setError(error.message);
       setIsLoading(false);
@@ -49,7 +67,10 @@ const Ingredients = () => {
   }
 
   const filteredIngredientsHandler = useCallback(filteredIngredients => {
-    setUserIngredients(filteredIngredients);
+    dispatch({
+      type: 'SET_INGREDIENTS',
+      ingredients: filteredIngredients
+    })
   }, []);
 
   const onCloseErrorModalHandler = () => {
