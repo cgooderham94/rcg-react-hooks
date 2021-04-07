@@ -1,4 +1,4 @@
-import React, { useReducer, useCallback } from 'react';
+import React, { useReducer, useCallback, useMemo } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -37,7 +37,7 @@ const Ingredients = () => {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
   const [httpState, dispatchHttp] = useReducer(httpReducer, { loading: false, error: null });
 
-  const addIngredientHandler = (ingredient) => {
+  const addIngredientHandler = useCallback((ingredient) => {
     dispatchHttp({ type: 'SEND' });
     
     fetch('https://rcg-react-hooks-ed0e9-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json', {
@@ -61,9 +61,9 @@ const Ingredients = () => {
     }).catch(error => {
       dispatchHttp({ type: 'ERROR', errorData: error.message });
     });
-  }
+  }, []);
 
-  const removeIngredientHandler = (ingredientId) => {
+  const removeIngredientHandler = useCallback((ingredientId) => {
     dispatchHttp({ type: 'SEND' });
 
     fetch(`https://rcg-react-hooks-ed0e9-default-rtdb.europe-west1.firebasedatabase.app/ingredients/${ingredientId}.json`, {
@@ -78,7 +78,7 @@ const Ingredients = () => {
     }).catch(error => {
       dispatchHttp({ type: 'ERROR', errorMessage: error.message });
     });
-  }
+  }, []);
 
   const filteredIngredientsHandler = useCallback(filteredIngredients => {
     dispatch({
@@ -87,9 +87,16 @@ const Ingredients = () => {
     })
   }, []);
 
-  const onCloseErrorModalHandler = () => {
+  const onCloseErrorModalHandler = useCallback(() => {
     dispatchHttp({ type: 'CLEAR_ERROR' });
-  }
+  });
+
+  const ingredientList = useMemo(() => {
+    return (
+    <IngredientList ingredients={userIngredients} 
+      onRemoveItem={removeIngredientHandler} 
+      loading={httpState.loading}></IngredientList>
+  )}, [userIngredients, removeIngredientHandler]);
 
   return (
     <div className="App">
@@ -98,7 +105,7 @@ const Ingredients = () => {
       <section>
         <Search onLoadIngredients={filteredIngredientsHandler} />
         
-        <IngredientList ingredients={userIngredients} onRemoveItem={removeIngredientHandler} loading={httpState.loading}></IngredientList>
+        { ingredientList }
       </section>
 
       {httpState.error && <ErrorModal onClose={onCloseErrorModalHandler}>{ httpState.error }</ErrorModal>}
